@@ -21,11 +21,11 @@ type ImageResizerOptions struct {
 	OutputFilePath string  `json:"output_file_path"`
 	Width          float64 `json:"width"`
 	Height         float64 `json:"height"`
-	Quality        int64   `json:"quality"`
+	Quality        int     `json:"quality"`
 	Debug          bool    `json:"debug"`
 }
 
-func (iro *ImageResizerOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int64, debug bool) (bool, error) {
+func (iro *ImageResizerOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (bool, error) {
 	cwd, _ := os.Getwd()
 
 	if width == 0 {
@@ -75,7 +75,7 @@ type ImageResizer struct {
 	options ImageResizerOptions
 }
 
-func (ir *ImageResizer) Resize(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int64, debug bool) (string, error) {
+func (ir *ImageResizer) Resize(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (string, error) {
 	// set options value
 	_, err := ir.options.init(basePath, inputPath, outputPath, filename, width, height, quality, debug)
 	if err != nil {
@@ -91,7 +91,7 @@ func (ir *ImageResizer) Resize(basePath string, inputPath string, outputPath str
 	gocv.Resize(src, &transform, image.Point{}, fx, fy, gocv.InterpolationCubic)
 
 	// ok := gocv.IMWrite(ir.options.OutputFilePath, transform)
-	if ok := gocv.IMWriteWithParams(ir.options.OutputFilePath, transform, []int{gocv.IMWriteJpegQuality, int(ir.options.Quality)}); !ok {
+	if ok := gocv.IMWriteWithParams(ir.options.OutputFilePath, transform, []int{gocv.IMWriteJpegQuality, ir.options.Quality}); !ok {
 		return "", errors.New("failed to write output file")
 	}
 	return ir.options.OutputFilePath, nil
