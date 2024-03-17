@@ -12,7 +12,7 @@ import (
 	"gocv.io/x/gocv"
 )
 
-type ImageResizerOptions struct {
+type ImageManipulationOptions struct {
 	BasePath       string  `json:"base_path"`
 	InputPath      string  `json:"input_path"`
 	OutputPath     string  `json:"output_path"`
@@ -25,7 +25,7 @@ type ImageResizerOptions struct {
 	Debug          bool    `json:"debug"`
 }
 
-func (iro *ImageResizerOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (bool, error) {
+func (iro *ImageManipulationOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (bool, error) {
 	cwd, _ := os.Getwd()
 
 	if width == 0 {
@@ -71,11 +71,11 @@ func (iro *ImageResizerOptions) init(basePath string, inputPath string, outputPa
 	return true, nil
 }
 
-type ImageResizer struct {
-	options ImageResizerOptions
+type ImageManipulation struct {
+	options ImageManipulationOptions
 }
 
-func (ir *ImageResizer) Resize(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (string, error) {
+func (ir *ImageManipulation) Resize(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (string, error) {
 	// set options value
 	_, err := ir.options.init(basePath, inputPath, outputPath, filename, width, height, quality, debug)
 	if err != nil {
