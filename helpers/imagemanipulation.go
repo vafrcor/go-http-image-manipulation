@@ -25,7 +25,7 @@ type ImageManipulationOptions struct {
 	Debug          bool    `json:"debug"`
 }
 
-func (iro *ImageManipulationOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (bool, error) {
+func (iro *ImageManipulationOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, targetImageFormat string, debug bool) (bool, error) {
 	cwd, _ := os.Getwd()
 
 	if width == 0 {
@@ -65,8 +65,10 @@ func (iro *ImageManipulationOptions) init(basePath string, inputPath string, out
 	}
 	now := time.Now()
 	ts := now.UnixNano()
+	mt := strings.Split(filename, ".")
+	imgFormat := mt[len(mt)-1]
 	iro.InputFilePath = filepath.Join(iro.InputPath, iro.FileName)
-	iro.OutputFilePath = filepath.Join(iro.OutputPath, strings.Replace(iro.FileName, ".png", fmt.Sprintf("-%v-%d.jpeg", ts, iro.Quality), 1))
+	iro.OutputFilePath = filepath.Join(iro.OutputPath, strings.Replace(iro.FileName, fmt.Sprintf(".%s", imgFormat), fmt.Sprintf("-%v-%d.%s", ts, iro.Quality, targetImageFormat), 1))
 	iro.Debug = debug
 	return true, nil
 }
@@ -77,10 +79,13 @@ type ImageManipulation struct {
 
 func (ir *ImageManipulation) Resize(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, debug bool) (string, error) {
 	// set options value
-	_, err := ir.options.init(basePath, inputPath, outputPath, filename, width, height, quality, debug)
+	mt := strings.Split(filename, ".")
+	imgFormat := mt[len(mt)-1]
+	_, err := ir.options.init(basePath, inputPath, outputPath, filename, width, height, quality, imgFormat, debug)
 	if err != nil {
 		return "", err
 	}
+	// main logic
 	src := gocv.IMRead(ir.options.InputFilePath, gocv.IMReadColor)
 	if src.Empty() {
 		return "", errors.New("failed to read input file")
@@ -90,8 +95,41 @@ func (ir *ImageManipulation) Resize(basePath string, inputPath string, outputPat
 	fy := ir.options.Height / float64(src.Rows())
 	gocv.Resize(src, &transform, image.Point{}, fx, fy, gocv.InterpolationCubic)
 
-	// ok := gocv.IMWrite(ir.options.OutputFilePath, transform)
-	if ok := gocv.IMWriteWithParams(ir.options.OutputFilePath, transform, []int{gocv.IMWriteJpegQuality, ir.options.Quality}); !ok {
+	if ok := gocv.IMWrite(ir.options.OutputFilePath, transform); !ok {
+		return "", errors.New("failed to write output file")
+	}
+	return ir.options.OutputFilePath, nil
+}
+
+func (ir *ImageManipulation) Compress(basePath string, inputPath string, outputPath string, filename string, quality int, debug bool) (string, error) {
+	// set options value
+	_, err := ir.options.init(basePath, inputPath, outputPath, filename, -1, -1, quality, "jpeg", debug)
+	if err != nil {
+		return "", err
+	}
+	// main logic
+	src := gocv.IMRead(ir.options.InputFilePath, gocv.IMReadColor)
+	if src.Empty() {
+		return "", errors.New("failed to read input file")
+	}
+	if ok := gocv.IMWriteWithParams(ir.options.OutputFilePath, src, []int{gocv.IMWriteJpegQuality, ir.options.Quality}); !ok {
+		return "", errors.New("failed to write output file")
+	}
+	return ir.options.OutputFilePath, nil
+}
+
+func (ir *ImageManipulation) PngToJpeg(basePath string, inputPath string, outputPath string, filename string, debug bool) (string, error) {
+	// set options value
+	_, err := ir.options.init(basePath, inputPath, outputPath, filename, -1, -1, 100, "jpeg", debug)
+	if err != nil {
+		return "", err
+	}
+	src := gocv.IMRead(ir.options.InputFilePath, gocv.IMReadColor)
+	if src.Empty() {
+		return "", errors.New("failed to read input file")
+	}
+	// main logic
+	if ok := gocv.IMWriteWithParams(ir.options.OutputFilePath, src, []int{gocv.IMWriteJpegQuality, ir.options.Quality}); !ok {
 		return "", errors.New("failed to write output file")
 	}
 	return ir.options.OutputFilePath, nil

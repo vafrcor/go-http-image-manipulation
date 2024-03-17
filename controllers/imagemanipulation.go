@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -17,9 +19,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/vafrcor/go-http-image-manipulation/helpers"
 	"github.com/vafrcor/go-http-image-manipulation/models"
+	_ "golang.org/x/image/bmp"
 )
 
-func ValidateImageFileUpload(c echo.Context) (map[string]string, error) {
+func ValidateImageFileUpload(c echo.Context, allowedFormat []string) (map[string]string, error) {
 	data := map[string]string{
 		"cwd":              "",
 		"base_upload_path": "",
@@ -72,9 +75,10 @@ func ValidateImageFileUpload(c echo.Context) (map[string]string, error) {
 		return nil, err
 	}
 
-	if imageType != "png" {
-		fmt.Printf("Invalid mime %s\n", imageType)
-		return nil, errors.New("only accept image using PNG format")
+	if !slices.Contains(allowedFormat, imageType) {
+		// fmt.Printf("Invalid mime %s\n", imageType)
+		msg := fmt.Sprintf("only accept image using specific format (%s)", strings.Join(allowedFormat, ","))
+		return nil, errors.New(msg)
 	}
 
 	// Return data for next process
@@ -87,7 +91,7 @@ func ValidateImageFileUpload(c echo.Context) (map[string]string, error) {
 }
 
 func ImageConvertPngToJpeg(c echo.Context) error {
-	data, err := ValidateImageFileUpload(c)
+	data, err := ValidateImageFileUpload(c, []string{"png"})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
@@ -95,8 +99,8 @@ func ImageConvertPngToJpeg(c echo.Context) error {
 		})
 	}
 	// fmt.Printf("DATA: %#v\n", data)
-	ir := helpers.ImageManipulation{}
-	output, err := ir.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], 640, 480, 100, false)
+	im := helpers.ImageManipulation{}
+	output, err := im.PngToJpeg(data["cwd"], data["upload_path"], data["output_path"], data["filename"], false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -126,7 +130,7 @@ func ImageResize(c echo.Context) error {
 		})
 	}
 
-	data, err := ValidateImageFileUpload(c)
+	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg"})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
@@ -134,8 +138,8 @@ func ImageResize(c echo.Context) error {
 		})
 	}
 	// fmt.Printf("DATA: %#v\n", data)
-	ir := helpers.ImageManipulation{}
-	output, err := ir.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], widthFloat, heightFloat, 100, false)
+	im := helpers.ImageManipulation{}
+	output, err := im.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], widthFloat, heightFloat, 100, false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -143,7 +147,7 @@ func ImageResize(c echo.Context) error {
 	return c.JSON(http.StatusOK, &models.Response{
 		Message: "Ok",
 		Status:  true,
-		Output:  fmt.Sprintf("Output: %s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
+		Output:  fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
 	})
 }
 
@@ -163,16 +167,16 @@ func ImageCompress(c echo.Context) error {
 			Status:  false,
 		})
 	}
-	data, err := ValidateImageFileUpload(c)
+	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg"})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
 			Status:  false,
 		})
 	}
-	// fmt.Printf("DATA: %#v\n", data)
-	ir := helpers.ImageManipulation{}
-	output, err := ir.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], 640, 480, qualityInt, false)
+	fmt.Printf("DATA: %#v\n", data)
+	im := helpers.ImageManipulation{}
+	output, err := im.Compress(data["cwd"], data["upload_path"], data["output_path"], data["filename"], qualityInt, false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -180,6 +184,6 @@ func ImageCompress(c echo.Context) error {
 	return c.JSON(http.StatusOK, &models.Response{
 		Message: "Ok",
 		Status:  true,
-		Output:  fmt.Sprintf("Output: %s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
+		Output:  fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
 	})
 }
