@@ -25,37 +25,38 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     - Content Type: `multipart/form-data`
     - Fields:
 
-| Name  | Mandatory  |  Description |
-|:---:|:---:|:---|
-| file | yes | image file (`image/png`) |
+    | Name  | Mandatory  |  Description |
+    |:---|:---:|:---|
+    | file | yes | image file (`image/png`) |
 
 - Response
     - Content Type: `application/json`
     - Fields:
 
-| Name  | Type  |  Description |
-|:---:|:---:|:---|
-| message | string | detailed message (for both success and error) |
-| status | boolean | `true | false` |  
-| output | string | output path (for preview) | 
+    | Name  | Type  |  Description |
+    |:---|:---:|:---|
+    | message | string | detailed message (for both success and error) |
+    | status | boolean | `true | false` |  
+    | output | string | output path (for preview) | 
 
-- Response Examples:
-    - Success
-```json
-{
-    "message": "Ok",
-    "status": true,
-    "output": "http://localhost:9000/static/small-1710681145040310000-100.jpeg"
-}
-```
-    - Error
-```json
-{
-    "message": "only accept image using specific format (png)",
-    "status": false,
-    "output": ""
-}
-```
+    - Examples:
+        - Success
+        ```json
+        {
+            "message": "Ok",
+            "status": true,
+            "output": "http://localhost:9000/static/small-1710681145040310000-100.jpeg"
+        }
+        ```
+        - Error
+
+        ```json
+        {
+            "message": "only accept image using specific format (png)",
+            "status": false,
+            "output": ""
+        }
+        ```
 
 ### Resize images according to specified dimensions 
 - URL: `[POST] http://localhost:9000/image-resize` 
@@ -63,39 +64,39 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     - Content Type: `multipart/form-data`
     - Fields:
 
-| Name  | Mandatory  |  Description |
-|:---:|:---:|:---|
-| file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`) |
-| width | yes | desired width (`in pixel`) |
-| height | yes | desired height (`in pixel`) |
+    | Name  | Mandatory  |  Description |
+    |:---|:---:|:---|
+    | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`) |
+    | width | yes | desired width (`in pixel`) |
+    | height | yes | desired height (`in pixel`) |
 
 - Response
     - Content Type: `application/json`
     - Fields:
 
-| Name  | Type  |  Description |
-|:---:|:---:|:---|
-| message | string | detailed message (for both success and error) |
-| status | boolean | `true | false` |  
-| output | string | output path (for preview) | 
+    | Name  | Type  |  Description |
+    |:---|:---:|:---|
+    | message | string | detailed message (for both success and error) |
+    | status | boolean | `true | false` |  
+    | output | string | output path (for preview) | 
 
-- Response Example:
-    - Success
-```json
-{
-    "message": "Ok",
-    "status": true,
-    "output": "http://localhost:9000/static/medium-1710685243638707000-100.png"
-}
-```
-    - Error
-```json
-{
-    "message": "only accept image using specific format (png,jpg,jpeg)",
-    "status": false,
-    "output": ""
-}
-```
+    - Example:
+        - Success
+        ```json
+        {
+            "message": "Ok",
+            "status": true,
+            "output": "http://localhost:9000/static/medium-1710685243638707000-100.png"
+        }
+        ```
+        - Error
+        ```json
+        {
+            "message": "only accept image using specific format (png,jpg,jpeg)",
+            "status": false,
+            "output": ""
+        }
+        ```
 
 ### Compress images to reduce file size while maintaining reasonable quality
 - URL: `[POST] http://localhost:9000/image-compression` 
@@ -103,38 +104,38 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     - Content Type: `multipart/form-data`
     - Fields:
 
-| Name  | Mandatory  |  Description |
-|:---:|:---:|:---|
-| file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`) |
-| quality | yes | desired quality (`0 - 100`) |
+    | Name  | Mandatory  |  Description |
+    |:---|:---:|:---|
+    | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`) |
+    | quality | yes | desired quality (`0 - 100`) |
 
 - Response
     - Content Type: `application/json`
     - Fields:
 
-| Name  | Type  |  Description |
-|:---:|:---:|:---|
-| message | string | detailed message (for both success and error) |
-| status | boolean | `true | false` |  
-| output | string | output path (for preview) |  
+    | Name  | Type  |  Description |
+    |:---|:---:|:---|
+    | message | string | detailed message (for both success and error) |
+    | status | boolean | `true | false` |  
+    | output | string | output path (for preview) |  
 
-- Response Example:
-    - Success
-```json
-{
-    "message": "Ok",
-    "status": true,
-    "output": "http://localhost:9000/static/medium-1710686662823893000-70.jpeg"
-}
-```
-    - Error
-```json
-{
-    "message": "http: no such file",
-    "status": false,
-    "output": ""
-}
-```
+    - Example:
+        - Success
+        ```json
+        {
+            "message": "Ok",
+            "status": true,
+            "output": "http://localhost:9000/static/medium-1710686662823893000-70.jpeg"
+        }
+        ```
+        - Error
+        ```json
+        {
+            "message": "http: no such file",
+            "status": false,
+            "output": ""
+        }
+        ```
 
 ## References
 - GoCV
