@@ -21,3 +21,7 @@ vendor/
 # Go workspace file
 go.work
 
+
+# Test & Coverage
+c.out
+coverage.html

@@ -14,17 +14,17 @@ import (
 )
 
 type ImageManipulationOptions struct {
-	BasePath       string  `json:"base_path"`
-	InputPath      string  `json:"input_path"`
-	OutputPath     string  `json:"output_path"`
-	FileName       string  `json:"file_name"`
-	InputFilePath  string  `json:"input_file_path"`
-	OutputFilePath string  `json:"output_file_path"`
-	Width          float64 `json:"width"`
-	Height         float64 `json:"height"`
-	Quality        int     `json:"quality"`
-	KeepAspecRatio bool    `json:"keep_aspect_ratio"`
-	Debug          bool    `json:"debug"`
+	BasePath        string  `json:"base_path"`
+	InputPath       string  `json:"input_path"`
+	OutputPath      string  `json:"output_path"`
+	FileName        string  `json:"file_name"`
+	InputFilePath   string  `json:"input_file_path"`
+	OutputFilePath  string  `json:"output_file_path"`
+	Width           float64 `json:"width"`
+	Height          float64 `json:"height"`
+	Quality         int     `json:"quality"`
+	KeepAspectRatio bool    `json:"keep_aspect_ratio"`
+	Debug           bool    `json:"debug"`
 }
 
 func (imo *ImageManipulationOptions) init(basePath string, inputPath string, outputPath string, filename string, width float64, height float64, quality int, targetImageFormat string, keepAspecRatio bool, debug bool) (bool, error) {
@@ -71,7 +71,7 @@ func (imo *ImageManipulationOptions) init(basePath string, inputPath string, out
 	imgFormat := mt[len(mt)-1]
 	imo.InputFilePath = filepath.Join(imo.InputPath, imo.FileName)
 	imo.OutputFilePath = filepath.Join(imo.OutputPath, strings.Replace(imo.FileName, fmt.Sprintf(".%s", imgFormat), fmt.Sprintf("-%v-%d.%s", ts, imo.Quality, targetImageFormat), 1))
-	imo.KeepAspecRatio = keepAspecRatio
+	imo.KeepAspectRatio = keepAspecRatio
 	imo.Debug = debug
 	return true, nil
 }
@@ -122,7 +122,7 @@ func (im *ImageManipulation) Resize(basePath string, inputPath string, outputPat
 	transform := gocv.NewMat()
 
 	var fx, fy float64
-	if im.options.KeepAspecRatio {
+	if im.options.KeepAspectRatio {
 		fitSize := im.CalculateAspectRatioFit(src.Cols(), src.Rows(), int(im.options.Width), int(im.options.Height))
 		// fmt.Printf("KEEP ASPECT RATIO: %#v \n", fitSize)
 		fx = float64(int(fitSize["width"])) / float64(src.Cols())

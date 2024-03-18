@@ -22,7 +22,7 @@ import (
 	_ "golang.org/x/image/bmp"
 )
 
-func ValidateImageFileUpload(c echo.Context, allowedFormat []string) (map[string]string, error) {
+func ValidateImageFileUpload(c echo.Context, allowedFormat []string, fieldName string) (map[string]string, error) {
 	data := map[string]string{
 		"cwd":              "",
 		"base_upload_path": "",
@@ -34,7 +34,7 @@ func ValidateImageFileUpload(c echo.Context, allowedFormat []string) (map[string
 	ts := now.UnixNano()
 
 	// Get uploaded file
-	file, err := c.FormFile("file")
+	file, err := c.FormFile(fieldName)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,8 @@ func ValidateImageFileUpload(c echo.Context, allowedFormat []string) (map[string
 
 	// Move File into destination directory
 	cwd, _ := os.Getwd()
-
+	cwd = strings.TrimSuffix(cwd, strings.Join([]string{string(os.PathSeparator), "controllers"}, ""))
+	// fmt.Printf("CWD: %v\n", cwd)
 	baseUploadPath := filepath.Join(cwd, "storages", "uploads")
 	uploadPath := filepath.Join(baseUploadPath, fmt.Sprintf("%d", ts))
 	outputPath := filepath.Join(cwd, "storages", "public")
@@ -91,7 +92,7 @@ func ValidateImageFileUpload(c echo.Context, allowedFormat []string) (map[string
 }
 
 func ImageConvertPngToJpeg(c echo.Context) error {
-	data, err := ValidateImageFileUpload(c, []string{"png"})
+	data, err := ValidateImageFileUpload(c, []string{"png"}, "file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
@@ -113,25 +114,19 @@ func ImageConvertPngToJpeg(c echo.Context) error {
 }
 
 func ImageResize(c echo.Context) error {
-	keepAspecRatio := c.FormValue("keep_aspec_ratio")
+	keepAspectRatio := c.FormValue("keep_aspect_ratio")
 	possibleAR := []string{"0", "1"}
-	if keepAspecRatio == "" {
-		keepAspecRatio = "1"
+	if keepAspectRatio == "" {
+		keepAspectRatio = "1"
 	}
-	if !slices.Contains(possibleAR, keepAspecRatio) {
+	if !slices.Contains(possibleAR, keepAspectRatio) {
 		return c.JSON(http.StatusBadRequest, &models.Response{
-			Message: "invalid keep_aspec_ratio option value (choose either 1 or 0)",
+			Message: "invalid keep_aspect_ratio option value (choose either 1 or 0)",
 			Status:  false,
 		})
 	}
 	width := c.FormValue("width")
 	height := c.FormValue("height")
-	if width == "" || height == "" {
-		return c.JSON(http.StatusBadRequest, &models.Response{
-			Message: "invalid width or height",
-			Status:  false,
-		})
-	}
 	if width == "" || height == "" {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: "invalid width or height",
@@ -147,7 +142,7 @@ func ImageResize(c echo.Context) error {
 		})
 	}
 
-	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg", "bmp"})
+	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg", "bmp"}, "file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
@@ -156,7 +151,7 @@ func ImageResize(c echo.Context) error {
 	}
 	// fmt.Printf("DATA: %#v\n", data)
 	im := helpers.ImageManipulation{}
-	keepAspectRatioBool, _ := strconv.ParseBool(keepAspecRatio)
+	keepAspectRatioBool, _ := strconv.ParseBool(keepAspectRatio)
 	output, err := im.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], widthFloat, heightFloat, 100, keepAspectRatioBool, false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
@@ -185,7 +180,7 @@ func ImageCompress(c echo.Context) error {
 			Status:  false,
 		})
 	}
-	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg", "bmp"})
+	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg", "bmp"}, "file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
