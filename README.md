@@ -75,7 +75,7 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`, `image/bmp`) |
     | width | yes | desired width (`in pixel`) |
     | height | yes | desired height (`in pixel`) |
-    | keep_aspec_ratio | no | `true` or `false` |
+    | keep_aspect_ratio | no | `1` or `0` |
 
 - Response
     - Content Type: `application/json`
