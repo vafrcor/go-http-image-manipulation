@@ -81,7 +81,6 @@ type ImageManipulation struct {
 }
 
 func (im *ImageManipulation) CalculateAspectRatioFit(srcWidth int, srcHeight int, targetWidth int, targetHeight int) map[string]float64 {
-	// source: https://opensourcehacker.com/2011/12/01/calculate-aspect-ratio-conserving-resize-for-images-in-javascript/
 	r := map[string]float64{}
 	ratio := math.Min(float64(targetWidth)/float64(srcWidth), float64(targetHeight)/float64(srcHeight))
 	r["width"] = float64(srcWidth) * ratio
