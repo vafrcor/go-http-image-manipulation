@@ -36,8 +36,8 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     | Name  | Type  |  Description |
     |:---|:---:|:---|
     | message | string | detailed message (for both success and error) |
-    | status | boolean | `true | false` |  
-    | output | string | output path (for preview) | 
+    | status | boolean | `true` or `false` |  
+    | data | string | output path (for preview) | 
 
     - Examples:
         - Success
@@ -45,7 +45,7 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
         {
             "message": "Ok",
             "status": true,
-            "output": "http://localhost:9000/static/small-1710681145040310000-100.jpeg"
+            "data": "http://localhost:9000/static/small-1710681145040310000-100.jpeg"
         }
         ```
         - Error
@@ -54,11 +54,11 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
         {
             "message": "only accept image using specific format (png)",
             "status": false,
-            "output": ""
+            "data": null
         }
         ```
 
-### Resize images according to specified dimensions 
+### Resize images according to specified dimensions
 - URL: `[POST] http://localhost:9000/image-resize` 
 - Request 
     - Content Type: `multipart/form-data`
@@ -66,9 +66,10 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
 
     | Name  | Mandatory  |  Description |
     |:---|:---:|:---|
-    | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`) |
+    | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`, `image/bmp`) |
     | width | yes | desired width (`in pixel`) |
     | height | yes | desired height (`in pixel`) |
+    | keep_aspec_ratio | no | `true` or `false` |
 
 - Response
     - Content Type: `application/json`
@@ -77,8 +78,8 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     | Name  | Type  |  Description |
     |:---|:---:|:---|
     | message | string | detailed message (for both success and error) |
-    | status | boolean | `true | false` |  
-    | output | string | output path (for preview) | 
+    | status | boolean | `true` or `false` |  
+    | data | string | output path (for preview) | 
 
     - Example:
         - Success
@@ -86,7 +87,7 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
         {
             "message": "Ok",
             "status": true,
-            "output": "http://localhost:9000/static/medium-1710685243638707000-100.png"
+            "data": "http://localhost:9000/static/medium-1710685243638707000-100.png"
         }
         ```
         - Error
@@ -94,7 +95,7 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
         {
             "message": "only accept image using specific format (png,jpg,jpeg)",
             "status": false,
-            "output": ""
+            "data": null
         }
         ```
 
@@ -106,8 +107,8 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
 
     | Name  | Mandatory  |  Description |
     |:---|:---:|:---|
-    | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`) |
-    | quality | yes | desired quality (`0 - 100`) |
+    | file | yes | image file (`image/png`, `image/jpg`, `image/jpeg`, `image/bmp`) |
+    | quality | yes | desired quality (`1 - 100`) |
 
 - Response
     - Content Type: `application/json`
@@ -116,8 +117,8 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     | Name  | Type  |  Description |
     |:---|:---:|:---|
     | message | string | detailed message (for both success and error) |
-    | status | boolean | `true | false` |  
-    | output | string | output path (for preview) |  
+    | status | boolean | `true` or `false` |  
+    | data | string | output path (for preview) |  
 
     - Example:
         - Success
@@ -125,7 +126,7 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
         {
             "message": "Ok",
             "status": true,
-            "output": "http://localhost:9000/static/medium-1710686662823893000-70.jpeg"
+            "data": "http://localhost:9000/static/medium-1710686662823893000-70.jpeg"
         }
         ```
         - Error
@@ -133,7 +134,7 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
         {
             "message": "http: no such file",
             "status": false,
-            "output": ""
+            "data": null
         }
         ```
 

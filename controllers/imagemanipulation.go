@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/vafrcor/go-http-image-manipulation/helpers"
 	"github.com/vafrcor/go-http-image-manipulation/models"
+	helpers "github.com/vafrcor/go-http-image-manipulation/services"
 	_ "golang.org/x/image/bmp"
 )
 
@@ -76,7 +76,7 @@ func ValidateImageFileUpload(c echo.Context, allowedFormat []string) (map[string
 	}
 
 	if !slices.Contains(allowedFormat, imageType) {
-		// fmt.Printf("Invalid mime %s\n", imageType)
+		// fmt.Printf("invalid mime %s\n", imageType)
 		msg := fmt.Sprintf("only accept image using specific format (%s)", strings.Join(allowedFormat, ","))
 		return nil, errors.New(msg)
 	}
@@ -108,16 +108,33 @@ func ImageConvertPngToJpeg(c echo.Context) error {
 	return c.JSON(http.StatusOK, &models.Response{
 		Message: "Ok",
 		Status:  true,
-		Output:  fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
+		Data:    fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
 	})
 }
 
 func ImageResize(c echo.Context) error {
+	keepAspecRatio := c.FormValue("keep_aspec_ratio")
+	possibleAR := []string{"0", "1"}
+	if keepAspecRatio == "" {
+		keepAspecRatio = "1"
+	}
+	if !slices.Contains(possibleAR, keepAspecRatio) {
+		return c.JSON(http.StatusBadRequest, &models.Response{
+			Message: "invalid keep_aspec_ratio option value (choose either 1 or 0)",
+			Status:  false,
+		})
+	}
 	width := c.FormValue("width")
 	height := c.FormValue("height")
 	if width == "" || height == "" {
 		return c.JSON(http.StatusBadRequest, &models.Response{
-			Message: "Invalid width or height",
+			Message: "invalid width or height",
+			Status:  false,
+		})
+	}
+	if width == "" || height == "" {
+		return c.JSON(http.StatusBadRequest, &models.Response{
+			Message: "invalid width or height",
 			Status:  false,
 		})
 	}
@@ -125,12 +142,12 @@ func ImageResize(c echo.Context) error {
 	heightFloat, _ := strconv.ParseFloat(height, 64)
 	if widthFloat < 0 || heightFloat < 0 {
 		return c.JSON(http.StatusBadRequest, &models.Response{
-			Message: "Invalid width or height",
+			Message: "invalid width or height",
 			Status:  false,
 		})
 	}
 
-	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg"})
+	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg", "bmp"})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
@@ -139,7 +156,8 @@ func ImageResize(c echo.Context) error {
 	}
 	// fmt.Printf("DATA: %#v\n", data)
 	im := helpers.ImageManipulation{}
-	output, err := im.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], widthFloat, heightFloat, 100, false)
+	keepAspectRatioBool, _ := strconv.ParseBool(keepAspecRatio)
+	output, err := im.Resize(data["cwd"], data["upload_path"], data["output_path"], data["filename"], widthFloat, heightFloat, 100, keepAspectRatioBool, false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -147,7 +165,7 @@ func ImageResize(c echo.Context) error {
 	return c.JSON(http.StatusOK, &models.Response{
 		Message: "Ok",
 		Status:  true,
-		Output:  fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
+		Data:    fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
 	})
 }
 
@@ -155,11 +173,11 @@ func ImageCompress(c echo.Context) error {
 	quality := c.FormValue("quality")
 	queryError := ""
 	if quality == "" {
-		queryError = "Invalid quality (must between 0 - 100)"
+		queryError = "invalid quality (must between 1 - 100)"
 	}
 	qualityInt, err := strconv.Atoi(quality)
 	if qualityInt < 0 || err != nil {
-		queryError = "Invalid quality (must between 0 - 100)"
+		queryError = "invalid quality (must between 1 - 100)"
 	}
 	if queryError != "" {
 		return c.JSON(http.StatusBadRequest, &models.Response{
@@ -167,14 +185,14 @@ func ImageCompress(c echo.Context) error {
 			Status:  false,
 		})
 	}
-	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg"})
+	data, err := ValidateImageFileUpload(c, []string{"png", "jpg", "jpeg", "bmp"})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &models.Response{
 			Message: err.Error(),
 			Status:  false,
 		})
 	}
-	fmt.Printf("DATA: %#v\n", data)
+	// fmt.Printf("DATA: %#v\n", data)
 	im := helpers.ImageManipulation{}
 	output, err := im.Compress(data["cwd"], data["upload_path"], data["output_path"], data["filename"], qualityInt, false)
 	if err != nil {
@@ -184,6 +202,6 @@ func ImageCompress(c echo.Context) error {
 	return c.JSON(http.StatusOK, &models.Response{
 		Message: "Ok",
 		Status:  true,
-		Output:  fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
+		Data:    fmt.Sprintf("%s://%s/static%s", helpers.GetEchoRequestScheme(c), c.Request().Host, strings.Replace(output, data["output_path"], "", 100)),
 	})
 }
