@@ -15,8 +15,14 @@ HTTP Implementation of Image Manipulation using Golang and OpenCV
     - From Source => `go run server.go` 
     - From Binary => `./go-http-image-manipulation`
 - Unit Tests
-    - Run `go test`
-    - Run `go test -cover` (show coverage)
+    - Normal test => run `go test ./...`
+    - Test with coverage result => run `go test ./... -cover` 
+    - Test and generate test coverage report (HTML) => `go test ./... -coverprofile=c.out && go tool cover -html=c.out -o coverage.html`
+    - Test specific package => run `go test {package_name}`
+        - Example: `go test "github.com/vafrcor/go-http-image-manipulation/services"`
+    - Test specific package test case => run `go test {package_name} -run {name_of_test}`
+        - Example: `go test "github.com/vafrcor/go-http-image-manipulation/services" -run TestGetEchoRequestScheme`
+    
 
 ## Endpoint Tests 
 ### Convert image files from PNG to JPEG 
